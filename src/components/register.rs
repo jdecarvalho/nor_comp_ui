@@ -4,11 +4,11 @@ use yew::virtual_dom::AttrValue;
 use yew_agent::{Bridge, Bridged};
 
 use crate::services::event_bus::{EventBus};
-use crate::services::events::{InboundMessage, InboundMessageType};
+use crate::services::events::{InboundMessage, InboundMessageType, InboundMessageEvent};
 
-pub enum ComponentEvent {
-    InboundMessage(String),
-}
+// pub enum ComponentEvent {
+//     InboundMessage(String),
+// }
 
 #[derive(Properties, PartialEq)]
 pub struct RegisterProps {
@@ -20,13 +20,13 @@ pub struct Register {
     _producer: Box<dyn Bridge<EventBus>>
 }
 impl Component for Register {
-    type Message = ComponentEvent;
+    type Message = InboundMessageEvent;
     type Properties = RegisterProps;
 
     fn create(ctx: &Context<Self>) -> Self {
         Self {
             register_a: NodeRef::default(),
-            _producer: EventBus::bridge(ctx.link().callback(ComponentEvent::InboundMessage)),
+            _producer: EventBus::bridge(ctx.link().callback(InboundMessageEvent::InboundMessage)),
         }
     }
 
@@ -53,15 +53,14 @@ impl Component for Register {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             // handle inbound messages from the websocket server
-            ComponentEvent::InboundMessage(msg) => {
-
+            InboundMessageEvent::InboundMessage(msg) => {
                 let msg: InboundMessage = serde_json::from_str(&msg).unwrap();
                 match msg.message_type {
                     InboundMessageType::RegisterModified{ register_name } => {
                         if ctx.props().name.eq_ignore_ascii_case(&register_name) {
                             let msg_data = msg.data.unwrap_or_default();
 
-                            log::info!("Received ComputerEvent::InboundMessage: {}", &msg_data);
+                            log::info!("Received InboundMessageType::RegisterModified[{}]: {}", register_name, &msg_data);
 
                             let input = self.register_a.cast::<HtmlInputElement>();
                             if let Some(input) = input {
@@ -72,7 +71,8 @@ impl Component for Register {
                         } else {
                             return false;
                         }
-                    }
+                    },
+                    _ => false
                 }
             },
         }

@@ -31,13 +31,13 @@ impl WebsocketService {
             while let Some(msg) = read.next().await {
                 match msg {
                     Ok(Message::Text(data)) => {
-                        log::debug!("Received from websocket: {}", data);
+                        log::debug!("Received text from websocket: {}", data);
                         event_bus.send(Request::EventBusMsg(data));
                     }
                     Ok(Message::Bytes(b)) => {
                         let decoded = std::str::from_utf8(&b);
                         if let Ok(val) = decoded {
-                            log::debug!("Received from websocket: {}", val);
+                            log::debug!("Received bytes from websocket: {}", val);
                             event_bus.send(Request::EventBusMsg(val.into()));
                         }
                     }

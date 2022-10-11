@@ -1,10 +1,15 @@
 use serde::{Deserialize, Serialize};
 
+pub enum InboundMessageEvent {
+    InboundMessage(String),
+}
+
 #[derive(Deserialize)]
 pub enum InboundMessageType {
     RegisterModified {
         register_name: String,
     },
+    OutputValue,
 }
 
 #[derive(Deserialize)]
